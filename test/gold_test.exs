@@ -45,7 +45,13 @@ defmodule GoldTest do
   end
 
   test "getaccount with invalid bitcoin address", %{btc: name} do
-    assert Gold.getaccount(name, "asdfasdfasdf") == {:error, %{error: "Invalid Bitcoin address", status: :internal_server_error, code: @rpc_invalid_address_or_key_error_code}}
+    assert Gold.getaccount(name, "asdfasdfasdf") ==
+             {:error,
+              %{
+                error: "Invalid Bitcoin address",
+                status: :internal_server_error,
+                code: @rpc_invalid_address_or_key_error_code
+              }}
   end
 
   test "getaccount! raises with invalid bitcoin address", %{btc: name} do
@@ -61,18 +67,30 @@ defmodule GoldTest do
   end
 
   test "listtransactions with invalid input", %{btc: name} do
-    assert Gold.listtransactions(name, "*", "AAA") == {:error,
-      %{error: "JSON value is not an integer as expected", status: :internal_server_error, code: @rpc_misc_error_error_code}}
+    assert Gold.listtransactions(name, "*", "AAA") ==
+             {:error,
+              %{
+                error: "JSON value is not an integer as expected",
+                status: :internal_server_error,
+                code: @rpc_misc_error_error_code
+              }}
   end
 
   test "listsinceblock/4 lists transactions since block", %{btc: name} do
     [hash] = Gold.generate!(name, 1)
-    assert %{"lastblock" => hash, "transactions" => []} == Gold.listsinceblock!(name, hash, 1, false)
+
+    assert %{"lastblock" => hash, "transactions" => []} ==
+             Gold.listsinceblock!(name, hash, 1, false)
   end
 
   test "gettransaction with invalid input", %{btc: name} do
-    assert Gold.gettransaction(name, "fsadfasdfasd") == {:error,
-      %{error: "Invalid or non-wallet transaction id", status: :internal_server_error, code: @rpc_invalid_address_or_key_error_code}}
+    assert Gold.gettransaction(name, "fsadfasdfasd") ==
+             {:error,
+              %{
+                error: "Invalid or non-wallet transaction id",
+                status: :internal_server_error,
+                code: @rpc_invalid_address_or_key_error_code
+              }}
   end
 
   test "sendtoaddress -> generate -> gettransaction", %{btc: name} do
@@ -100,8 +118,13 @@ defmodule GoldTest do
   end
 
   test "importaddress with invalid input", %{btc: name} do
-    assert Gold.importaddress(name, "asdasda") == {:error,
-      %{error: "Invalid Bitcoin address or script", status: :internal_server_error, code: @rpc_invalid_address_or_key_error_code}}
+    assert Gold.importaddress(name, "asdasda") ==
+             {:error,
+              %{
+                error: "Invalid Bitcoin address or script",
+                status: :internal_server_error,
+                code: @rpc_invalid_address_or_key_error_code
+              }}
   end
 
   test "getblock!", %{btc: name} do
@@ -112,7 +135,13 @@ defmodule GoldTest do
   end
 
   test "getblock with invalid hash", %{btc: name} do
-    assert Gold.getblock(name, "asdasd") == {:error, %{error: "Block not found", status: :internal_server_error, code: @rpc_invalid_address_or_key_error_code}}
+    assert Gold.getblock(name, "asdasd") ==
+             {:error,
+              %{
+                error: "Block not found",
+                status: :internal_server_error,
+                code: @rpc_invalid_address_or_key_error_code
+              }}
   end
 
   test "getblockhash!", %{btc: name} do
@@ -122,7 +151,13 @@ defmodule GoldTest do
   end
 
   test "getblockhash with invalid height", %{btc: name} do
-    assert Gold.getblockhash(name, 100000) == {:error, %{error: "Block height out of range", status: :internal_server_error, code: @rpc_invalid_parameter_error_code}}
+    assert Gold.getblockhash(name, 100_000) ==
+             {:error,
+              %{
+                error: "Block height out of range",
+                status: :internal_server_error,
+                code: @rpc_invalid_parameter_error_code
+              }}
   end
 
   test "getrawtransaction!", %{btc: name} do
@@ -137,9 +172,17 @@ defmodule GoldTest do
   end
 
   test "getrawtransaction with invalid tx", %{btc: name} do
-    assert Gold.getrawtransaction(name, "44a0ae95760ae0c93f76086f951c73327737b045c119c3eae56f56c273dc9921") ==
-      {:error, %{error: "No such mempool transaction. Use -txindex to enable blockchain transaction queries. Use gettransaction for wallet transactions.",
-      status: :internal_server_error, code: @rpc_invalid_address_or_key_error_code}}
+    assert Gold.getrawtransaction(
+             name,
+             "44a0ae95760ae0c93f76086f951c73327737b045c119c3eae56f56c273dc9921"
+           ) ==
+             {:error,
+              %{
+                error:
+                  "No such mempool transaction. Use -txindex to enable blockchain transaction queries. Use gettransaction for wallet transactions.",
+                status: :internal_server_error,
+                code: @rpc_invalid_address_or_key_error_code
+              }}
   end
 
   test "getblockcount!", %{btc: name} do
@@ -155,8 +198,16 @@ defmodule GoldTest do
   end
 
   @info_floats ["relayfee", "paytxfee", "difficulty", "balance"]
-  @info_integers ["walletversion", "version", "timeoffset", "protocolversion",
-   "keypoolsize", "keypoololdest", "connections", "blocks"]
+  @info_integers [
+    "walletversion",
+    "version",
+    "timeoffset",
+    "protocolversion",
+    "keypoolsize",
+    "keypoololdest",
+    "connections",
+    "blocks"
+  ]
 
   @info_methods ~w(getinfo
                    getblockchaininfo
@@ -167,32 +218,32 @@ defmodule GoldTest do
                    getpeerinfo
                    getwalletinfo)a
 
-  Enum.each @info_methods, fn(method) ->
-
+  Enum.each(@info_methods, fn method ->
     test method, %{btc: name} do
       {:ok, info} = :erlang.apply(Gold, unquote(method), [name])
-      Enum.each info, fn
-        ({key, value}) when key in @info_floats -> assert is_float(value)
-        ({key, value}) when key in @info_integers -> assert is_integer(value)
-        (other) -> other
-      end
+
+      Enum.each(info, fn
+        {key, value} when key in @info_floats -> assert is_float(value)
+        {key, value} when key in @info_integers -> assert is_integer(value)
+        other -> other
+      end)
     end
 
     method_bang = :"#{method}!"
 
     test method_bang, %{btc: name} do
       info = :erlang.apply(Gold, unquote(method_bang), [name])
-      Enum.each info, fn
-        ({key, value}) when key in @info_floats -> assert is_float(value)
-        ({key, value}) when key in @info_integers -> assert is_integer(value)
-        (other) -> other
-      end
+
+      Enum.each(info, fn
+        {key, value} when key in @info_floats -> assert is_float(value)
+        {key, value} when key in @info_integers -> assert is_integer(value)
+        other -> other
+      end)
     end
-  end
+  end)
 
   test "error handling", %{btc: name} do
     {:error, %{error: "JSON integer out of range", status: :internal_server_error}} =
       Gold.generate(name, 0x80000000)
   end
-
 end

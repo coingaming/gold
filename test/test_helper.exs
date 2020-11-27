@@ -1,7 +1,7 @@
 defmodule Gold.DefaultCase do
   use ExUnit.CaseTemplate
 
-  setup do        
+  setup do
     {:ok, btc: :regtest}
   end
 end
